@@ -12,15 +12,23 @@ import 'semantic-ui-css/semantic.min.css'
 import { SubstrateContextProvider, useSubstrateState } from './substrate-lib'
 import { DeveloperConsole } from './substrate-lib/components'
 
+// Polkadot Cloud imports
+import { Connect } from '@polkadot-cloud/react'
+import {
+  ConnectConfigProvider,
+  connectInfo,
+} from '@polkadot-cloud/react/recipes/Connect'
+import { DappInfo } from '@polkadot-cloud/react/types'
+
 import AccountSelector from './AccountSelector'
-import Balances from './Balances'
+// import Balances from './Balances'
 import BlockNumber from './BlockNumber'
 import Events from './Events'
 import Interactor from './Interactor'
 import Metadata from './Metadata'
 import NodeInfo from './NodeInfo'
 import TemplateModule from './TemplateModule'
-import Transfer from './Transfer'
+// import Transfer from './Transfer'
 import Upgrade from './Upgrade'
 
 function Main() {
@@ -49,11 +57,11 @@ function Main() {
   if (apiState === 'ERROR') return message(apiError)
   else if (apiState !== 'READY') return loader('Connecting to Substrate')
 
-  if (keyringState !== 'READY') {
-    return loader(
-      "Loading accounts (please review any extension's authorization)"
-    )
-  }
+  // if (keyringState !== 'READY') {
+  //   return loader(
+  //     "Loading accounts (please review any extension's authorization)"
+  //   )
+  // }
 
   const contextRef = createRef()
 
@@ -70,11 +78,9 @@ function Main() {
             <BlockNumber />
             <BlockNumber finalized />
           </Grid.Row>
-          <Grid.Row stretched>
-            <Balances />
-          </Grid.Row>
+          <Grid.Row stretched>{/* <Balances /> */}</Grid.Row>
           <Grid.Row>
-            <Transfer />
+            {/* <Transfer /> */}
             <Upgrade />
           </Grid.Row>
           <Grid.Row>
@@ -92,9 +98,20 @@ function Main() {
 }
 
 export default function App() {
+  const dappInfo: DappInfo = {
+    dappName: 'dApp Name',
+    network: 'polkadot',
+    ss58: 0,
+  }
+  const providers = connectInfo(dappInfo)
+
   return (
-    <SubstrateContextProvider>
-      <Main />
-    </SubstrateContextProvider>
+    <ConnectConfigProvider dappInfo={dappInfo}>
+      <Connect providers={providers}>
+        <SubstrateContextProvider>
+          <Main />
+        </SubstrateContextProvider>
+      </Connect>
+    </ConnectConfigProvider>
   )
 }

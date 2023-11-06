@@ -13,6 +13,13 @@ import {
 
 import { useSubstrate, useSubstrateState } from './substrate-lib'
 
+import { useOverlay } from '@polkadot-cloud/react/hooks'
+import {
+  Overlays,
+  useActiveAccounts,
+} from '@polkadot-cloud/react/recipes/Connect'
+import { Button as SButton } from '@polkadot-cloud/react'
+
 const CHROME_EXT_URL =
   'https://chrome.google.com/webstore/detail/polkadot%7Bjs%7D-extension/mopnmbcafieddcagagdcbnhejhlodfdd'
 const FIREFOX_ADDON_URL =
@@ -26,8 +33,11 @@ function Main(props) {
     state: { keyring, currentAccount },
   } = useSubstrate()
 
+  const { openModal } = useOverlay().modal
+  const { activeAccount } = useActiveAccounts()
+
   // Get the list of accounts we possess the private key for
-  const keyringOptions = keyring.getPairs().map(account => ({
+  const keyringOptions = keyring?.getPairs()?.map(account => ({
     key: account.address,
     value: account.address,
     text: account.meta.name.toUpperCase(),
@@ -35,7 +45,7 @@ function Main(props) {
   }))
 
   const initialAddress =
-    keyringOptions.length > 0 ? keyringOptions[0].value : ''
+    keyringOptions?.length > 0 ? keyringOptions[0].value : ''
 
   // Set the initial address
   useEffect(() => {
@@ -62,10 +72,7 @@ function Main(props) {
     >
       <Container>
         <Menu.Menu>
-          <Image
-            src={`${process.env.PUBLIC_URL}/assets/substrate-logo.png`}
-            size="mini"
-          />
+          <Image src={`/assets/substrate-logo.png`} size="mini" />
         </Menu.Menu>
         <Menu.Menu position="right" style={{ alignItems: 'center' }}>
           {!currentAccount ? (
@@ -90,7 +97,7 @@ function Main(props) {
               color={currentAccount ? 'green' : 'red'}
             />
           </CopyToClipboard>
-          <Dropdown
+          {/* <Dropdown
             search
             selection
             clearable
@@ -100,7 +107,24 @@ function Main(props) {
               onChange(dropdown.value)
             }}
             value={acctAddr(currentAccount)}
-          />
+          /> */}
+          <>
+            <Overlays />
+            <div style={{ display: 'flex' }}>
+              {activeAccount && (
+                <p style={{ padding: '0 10rem' }}>{activeAccount}</p>
+              )}
+              <SButton
+                type="primary"
+                text={activeAccount ? 'Connected' : 'Connect'}
+                onClick={() => {
+                  activeAccount
+                    ? openModal({ key: 'Accounts' })
+                    : openModal({ key: 'Connect' })
+                }}
+              />
+            </div>
+          </>
           <BalanceAnnotation />
         </Menu.Menu>
       </Container>
@@ -138,5 +162,6 @@ function BalanceAnnotation(props) {
 
 export default function AccountSelector(props) {
   const { api, keyring } = useSubstrateState()
-  return keyring.getPairs && api.query ? <Main {...props} /> : null
+  // return keyring.getPairs && api.query ? <Main {...props} /> : null
+  return <Main {...props} />
 }
